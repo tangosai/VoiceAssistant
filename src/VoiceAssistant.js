@@ -1,9 +1,11 @@
-// src/VoiceAssistant.js
 import React, { useState, useEffect } from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 import "./VoiceAssistant.css";
+import { IoIosMic } from "react-icons/io";
+import { IoMdMicOff } from "react-icons/io";
+import { IoIosSend } from "react-icons/io";
 
 const VoiceAssistant = () => {
   const { transcript, resetTranscript } = useSpeechRecognition();
@@ -30,7 +32,7 @@ const VoiceAssistant = () => {
 
   const fetchResponseFromJSON = async (message) => {
     const jsonData = {
-      hello: "Hi there! How can I help you today?",
+      hello: "Hi, This is Cooper, Welcome to CATS, How can I assist you?",
       "how are you":
         "I'm a computer program, so I don't have feelings, but I'm here to help you!",
       "what is your name": "I'm your friendly voice assistant.",
@@ -66,6 +68,7 @@ const VoiceAssistant = () => {
       "can you dance":
         "I can't dance, but I can tell you a dance joke! Why don't skeletons dance at parties? Because they have no body to dance with!",
       "tell me a riddle": "What has keys but can't open locks? A piano.",
+      hii: "Hi, This is Cooper, Welcome to CATS, How can I assist you?",
     };
 
     return (
@@ -83,6 +86,7 @@ const VoiceAssistant = () => {
       SpeechRecognition.stopListening();
       setIsListening(false);
     } else {
+      resetTranscript();
       SpeechRecognition.startListening({ continuous: true });
       setIsListening(true);
     }
@@ -119,13 +123,14 @@ const VoiceAssistant = () => {
           onKeyPress={handleKeyPress} // Add key press event handler
           placeholder="Speak or type here"
         />
-        <button onClick={handleSend}>Send</button>
-      </div>
-      <div className="control-buttons">
-        <button onClick={toggleListening}>
-          {isListening ? "Stop Listening" : "Start Listening"}
-        </button>
-        <button onClick={resetTranscript}>Reset Transcript</button>
+        <div className="control-buttons">
+          <button onClick={toggleListening}>
+            {isListening ? <IoMdMicOff /> : <IoIosMic />}
+          </button>
+          <button onClick={handleSend}>
+            <IoIosSend />
+          </button>
+        </div>
       </div>
     </div>
   );
