@@ -3,26 +3,32 @@ import React, { useState, useEffect } from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
+import "./VoiceAssistant.css";
 
 const VoiceAssistant = () => {
   const { transcript, resetTranscript } = useSpeechRecognition();
-  const [response, setResponse] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [isListening, setIsListening] = useState(false);
 
   useEffect(() => {
     if (transcript) {
-      handleResponse(transcript);
+      setInputValue(transcript);
     }
   }, [transcript]);
 
   const handleResponse = async (message) => {
-    // Replace with your JSON data handling
+    const userMessage = { sender: "user", text: message };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+
     const jsonResponse = await fetchResponseFromJSON(message);
-    setResponse(jsonResponse);
+    const botMessage = { sender: "bot", text: jsonResponse };
+    setMessages((prevMessages) => [...prevMessages, botMessage]);
+
     speakResponse(jsonResponse);
   };
 
   const fetchResponseFromJSON = async (message) => {
-    // Mock JSON data interaction
     const jsonData = {
       hello: "Hi there! How can I help you today?",
       "how are you":
@@ -72,21 +78,55 @@ const VoiceAssistant = () => {
     window.speechSynthesis.speak(speech);
   };
 
-  const startListening = () =>
-    SpeechRecognition.startListening({ continuous: true });
-  const stopListening = () => SpeechRecognition.stopListening();
+  const toggleListening = () => {
+    if (isListening) {
+      SpeechRecognition.stopListening();
+      setIsListening(false);
+    } else {
+      SpeechRecognition.startListening({ continuous: true });
+      setIsListening(true);
+    }
+  };
 
-  if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
-    return <div>Browser doesn't support speech recognition.</div>;
-  }
+  const handleSend = () => {
+    if (inputValue.trim()) {
+      handleResponse(inputValue);
+      setInputValue("");
+      resetTranscript();
+    }
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleSend();
+    }
+  };
 
   return (
-    <div>
-      <button onClick={startListening}>Start Listening</button>
-      <button onClick={stopListening}>Stop Listening</button>
-      <button onClick={resetTranscript}>Reset Transcript</button>
-      <p>Transcript: {transcript}</p>
-      <p>Response: {response}</p>
+    <div className="chat-container">
+      <div className="chat-window">
+        {messages.map((message, index) => (
+          <div key={index} className={`chat-message ${message.sender}`}>
+            {message.text}
+          </div>
+        ))}
+      </div>
+      <div className="input-container">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={handleKeyPress} // Add key press event handler
+          placeholder="Speak or type here"
+        />
+        <button onClick={handleSend}>Send</button>
+      </div>
+      <div className="control-buttons">
+        <button onClick={toggleListening}>
+          {isListening ? "Stop Listening" : "Start Listening"}
+        </button>
+        <button onClick={resetTranscript}>Reset Transcript</button>
+      </div>
     </div>
   );
 };
